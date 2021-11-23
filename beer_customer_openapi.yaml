@@ -34,23 +34,43 @@ paths:
                   type: object
                   description: Customer Object
                   properties:
+                    id:
+                      type: string
+                      format: uuid
                     firstName: 
                       type: string
                       minLength: 2
                       maxLength: 100
+                      example: John
                     lastName:
                       type: string
                       minLength: 2
                       maxLength: 100
+                      example: Thompson
                     address:
                       type: object
                       properties:
                         line1:
                           type: string
+                          example: 123 Main St
                         city:
                           type: string
+                          example: St Pete
+                        stateCode:
+                          type: string
+                          description: 2 letter state code
+                          minLength: 2
+                          maxLength: 2
+                          # enum : [ AL, AX, AZ, AR, CA ]
+                          enum:
+                            - AL
+                            - AX
+                            - AZ
+                            - AR
+                            - CA
                         zipCode:
                           type: string
+                          example: 33701
                         
                     
   /v1/beers:
@@ -58,6 +78,40 @@ paths:
       responses:
         200:
           description: List of Beers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: Beer Object
+                  properties:
+                    beerName:
+                      type: string
+                    style:
+                      type: string
+                      enum:
+                        - ALE
+                        - PALE_ALE
+                        - IPA
+                        - WHEAT
+                        - LAGER
+                    upc:
+                      type: string
+                    price:
+                      type: number
+                      format: float
+                      example: 7.55
+                    quantity:
+                      type: integer
+                      format: int32
+                    brewery:
+                      type: object
+                      properties:
+                        name: 
+                          type: string
+                        location:
+                          type: string
         404:
           description: No Beers Found
 components: {}
