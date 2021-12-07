@@ -21,35 +21,95 @@ servers:
 paths:
   /v1/customers:
     get:
+      summary: List Customers
+      description: Get a list of customers in the system
+      tags:
+        - Customers
+      operationId: listCustomersV1
       parameters:
         - $ref : "#/components/parameters/PageNumberParam"
         - $ref : "#/components/parameters/PageSizeParam"
       responses:
-        200:
+        '200':
           description: List of Customers
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CustomerPagedList"
+    post:
+      summary: New customer
+      description: Create a new customer 
+      tags:
+        - Customers
+      operationId: createCustomerV1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref : "#/components/schemas/Customer"
+      responses:
+        '201':
+          description: Customer created
+          headers:
+            location:
+              description: Location of the created customer
+              schema:
+                type: string
+                format: uri
+                example: http://example.com/v1/customers/{assignedIdValue}
   /v1/customers/{customerId}:
     get:
+      summary: Get Customer by Id
+      description: Get a single **customer** by its id value
+      tags:
+        - Customers
+      operationId: getCustomerByIdV1
       parameters:
-        - name: customerId
-          in: path  
-          description: Customer Id
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: "#/components/parameters/CustomerIdPathParam"
       responses:
-        200:
+        '200':
           description: Requested Customer
           content:
             application/json:
               schema:
                 $ref : "#/components/schemas/Customer"
+    put:
+      summary: Update customer
+      description: update customer by id
+      tags:
+        - Customers
+      operationId: updateCustomerByIdV1
+      parameters:
+        - $ref: "#/components/parameters/CustomerIdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref : "#/components/schemas/Customer"
+      responses:
+        '204':
+          description: Customer updated
+    delete:
+      summary: Delete customer
+      description: Delete customer by id
+      tags:
+        - Customers
+      operationId: deleteCustomerByIdV1
+      parameters:
+        - $ref: "#/components/parameters/CustomerIdPathParam"
+      responses:
+        '200' :
+          description: Customer deleted
+        
   /v1/beers:
     get:
+      summary: List Beers
+      description: Get a list of beers in the system
+      tags:
+        - Beers
+      operationId: listBeersV1
       parameters:
         - $ref : "#/components/parameters/PageNumberParam"
         - $ref : "#/components/parameters/PageSizeParam"
@@ -62,15 +122,37 @@ paths:
                 $ref: "#/components/schemas/BeerPagedList"
         404:
           description: No Beers Found
-  /v1/beers/{beerName}:
+    post:
+      summary: New Beer
+      description: Create a new beer 
+      tags:
+        - Beers
+      operationId: createBeerV1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref : "#/components/schemas/Beer"
+      responses:
+        '201':
+          description: Customer created
+          headers:
+            location:
+              description: Location of the created beer
+              schema:
+                type: string
+                format: uri
+                example: http://example.com/v1/beers/{assignedIdValue}
+  /v1/beers/{beerId}:
     get:
+      summary: Get Beer by Id
+      description: Get a single **Beer** by its id value
+      tags:
+        - Beers
+      operationId: getBeerByIdV1
       parameters:
-        - name: beerName
-          in: path  
-          description: Beer Name
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/BeerIdPathParam"
       responses:
         200:
           description: Requested Beer
@@ -78,6 +160,34 @@ paths:
             application/json:
               schema:
                 $ref : "#/components/schemas/Beer"
+    put:
+      summary: Update beer
+      description: update beer by id
+      tags:
+        - Beers
+      operationId: updateBeerByIdV1
+      parameters:
+        - $ref: "#/components/parameters/BeerIdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref : "#/components/schemas/Beer"
+      responses:
+        '204':
+          description: Beer updated
+    delete:
+      summary: Delete beer
+      description: Delete beer by id
+      tags:
+        - Beers
+      operationId: deleteBeerByIdV1
+      parameters:
+        - $ref: "#/components/parameters/BeerIdPathParam"
+      responses:
+        '200' :
+          description: Beer deleted
 components:
   schemas:
     Address:
@@ -111,6 +221,7 @@ components:
         id:
           type: string
           format: uuid
+          readOnly: true
         firstName: 
           type: string
           minLength: 2
@@ -147,6 +258,10 @@ components:
       type: object
       description: Beer Object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         beerName:
           type: string
         style:
@@ -249,3 +364,19 @@ components:
         type: integer
         format: int32
         default: 25
+    CustomerIdPathParam:
+      name: customerId
+      in: path  
+      description: Customer Id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BeerIdPathParam:
+      name: beerId
+      in: path  
+      description: Beer Id
+      required: true
+      schema:
+        type: string
+        format: uuid
