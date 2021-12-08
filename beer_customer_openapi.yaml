@@ -58,6 +58,10 @@ paths:
                 type: string
                 format: uri
                 example: http://example.com/v1/customers/{assignedIdValue}
+        '400':
+          description: Bad Request
+        '409':
+          description: Conflict
   /v1/customers/{customerId}:
     get:
       summary: Get Customer by Id
@@ -74,6 +78,8 @@ paths:
             application/json:
               schema:
                 $ref : "#/components/schemas/Customer"
+        '404':
+          description: Not Found
     put:
       summary: Update customer
       description: update customer by id
@@ -91,6 +97,12 @@ paths:
       responses:
         '204':
           description: Customer updated
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
     delete:
       summary: Delete customer
       description: Delete customer by id
@@ -102,7 +114,65 @@ paths:
       responses:
         '200' :
           description: Customer deleted
-        
+        '404':
+          description: Not Found
+  /v1/customers/{customerId}/orders:
+    post:
+      tags:
+      - Order Service
+      description: Place Order
+      parameters:
+      - name: customerId
+        in: path
+        description: Customer Id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BeerOrder'
+        required: false
+      responses:
+        201:
+          description: Order Created
+          headers:
+            Location:
+              description: Reference to created Order
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uri
+        400:
+          description: Bad Reqeust
+        404:
+          description: Not Found
+        409:
+          description: Conflict
+      callbacks:
+        orderStatusChange:
+          ${request.body#/orderStatusCallbackUrl}:
+            description: Webhook for order status change notifications
+            post:
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        orderId:
+                          type: string
+                          format: uuid
+                        orderStatus:
+                          type: string
+              responses:
+                200:
+                  description: Okay
   /v1/beers:
     get:
       summary: List Beers
@@ -114,13 +184,13 @@ paths:
         - $ref : "#/components/parameters/PageNumberParam"
         - $ref : "#/components/parameters/PageSizeParam"
       responses:
-        200:
+        '200':
           description: List of Beers
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BeerPagedList"
-        404:
+        '404':
           description: No Beers Found
     post:
       summary: New Beer
@@ -144,6 +214,10 @@ paths:
                 type: string
                 format: uri
                 example: http://example.com/v1/beers/{assignedIdValue}
+        '400':
+          description: Bad Request
+        '409':
+          description: Conflict
   /v1/beers/{beerId}:
     get:
       summary: Get Beer by Id
@@ -154,12 +228,14 @@ paths:
       parameters:
         - $ref: "#/components/parameters/BeerIdPathParam"
       responses:
-        200:
+        '200':
           description: Requested Beer
           content:
             application/json:
               schema:
                 $ref : "#/components/schemas/Beer"
+        '404':
+          description: Not Found
     put:
       summary: Update beer
       description: update beer by id
@@ -177,6 +253,12 @@ paths:
       responses:
         '204':
           description: Beer updated
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
     delete:
       summary: Delete beer
       description: Delete beer by id
@@ -188,6 +270,8 @@ paths:
       responses:
         '200' :
           description: Beer deleted
+        '404':
+          description: Not Found
 components:
   schemas:
     Address:
@@ -294,6 +378,54 @@ components:
           $ref: '#/components/schemas/BeerList'
       allOf:
       - $ref: '#/components/schemas/PagedResponse'
+    BeerOrder:
+      required:
+      - customerId
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        customerId:
+          type: string
+          format: uuid
+        customerRef:
+          type: string
+          nullable: true
+        beerOrderLines:
+          type: array
+          items:
+            $ref: '#/components/schemas/BeerOrderLine'
+        orderStatusCallbackUrl:
+          type: string
+          format: uri
+    BeerOrderLine:
+      required:
+      - orderQuantity
+      - upc
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        beerId:
+          type: string
+          format: uuid
+          readOnly: true
+        upc:
+          type: string
+        orderQuantity:
+          maximum: 999
+          minimum: 1
+          type: integer
+        quantityAllocated:
+          type: integer
+          nullable: true
+          readOnly: true
     PagedResponse:
       type: object
       properties:
@@ -379,4 +511,4 @@ components:
       required: true
       schema:
         type: string
-        format: uuid
+        format: uuid  
