@@ -18,11 +18,14 @@ servers:
   description: QA Server
 - url: https://prod.example.com
   description: Production Server
+security:
+  - BasicAuth: []
+  - JWTAuthToken: []
 paths:
   /v1/customers:
     get:
       summary: List Customers
-      description: Get a list of customers in the system
+      description: Get a list of customers in the system (No security)
       tags:
         - Customers
       operationId: listCustomersV1
@@ -36,6 +39,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CustomerPagedList"
+      security: []
     post:
       summary: New customer
       description: Create a new customer 
@@ -65,7 +69,7 @@ paths:
   /v1/customers/{customerId}:
     get:
       summary: Get Customer by Id
-      description: Get a single **customer** by its id value
+      description: Get a single **customer** by its id value (No security)
       tags:
         - Customers
       operationId: getCustomerByIdV1
@@ -80,6 +84,7 @@ paths:
                 $ref : "#/components/schemas/Customer"
         '404':
           description: Not Found
+      security: []
     put:
       summary: Update customer
       description: update customer by id
@@ -138,7 +143,7 @@ paths:
               $ref: '#/components/schemas/BeerOrder'
         required: false
       responses:
-        201:
+        '201':
           description: Order Created
           headers:
             Location:
@@ -148,11 +153,11 @@ paths:
               schema:
                 type: string
                 format: uri
-        400:
+        '400':
           description: Bad Reqeust
-        404:
+        '404':
           description: Not Found
-        409:
+        '409':
           description: Conflict
       callbacks:
         orderStatusChange:
@@ -273,6 +278,15 @@ paths:
         '404':
           description: Not Found
 components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Setup Basic Authentication
+    JWTAuthToken:
+      type: http
+      scheme: bearer
+      description: Setup JWT Auth Token
   schemas:
     Address:
       type: object
